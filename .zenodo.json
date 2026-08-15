@@ -1,0 +1,25 @@
+{
+  "creators": [
+    {
+      "name": "Haig, Adam"
+    },
+    {
+      "name": "OpenAI Codex (AI system)"
+    }
+  ],
+  "title": "A Proof of the OEIS A105565 Discrepancy Bound",
+  "description": "A complete Lean 4 proof of the OEIS A105565 discrepancy conjecture, accompanied by a short human-readable proof note. Solved by OpenAI Codex, prompted by Adam Haig. Adam Haig is the human submitting author and archive maintainer; OpenAI Codex performed the majority of the mathematical proof development and Lean formalization.",
+  "version": "a105565-v1.0.2",
+  "access_right": "open",
+  "license": "apache2.0",
+  "upload_type": "software",
+  "language": "eng",
+  "keywords": [
+    "OEIS A105565",
+    "Fibonacci numbers",
+    "discrepancy",
+    "Lean 4",
+    "formal proof",
+    "AI-assisted mathematics"
+  ]
+}
