@@ -1,0 +1,311 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{noteBlue}{HTML}{2E74B5}
+\definecolor{noteGray}{HTML}{52606D}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newcommand{\fib}{F}
+\newcommand{\R}{\mathbb{R}}
+
+\title{\textbf{A Proof of the OEIS A105565 Discrepancy Bound}}
+\author{
+  Adam Haig\\[-2pt]
+  \small human prompter and submitting author
+  \and
+  OpenAI Codex (AI system)\thanks{Codex is an AI system, not a legal person. Its
+  inclusion in the byline credits its substantive proof and formalization work;
+  Adam Haig is the human submitting author and is responsible for the deposit.}\\[-2pt]
+  \small AI proof author and formalizer
+}
+\date{15 August 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Let $a(n)$ indicate whether exactly five Fibonacci numbers have $n$ decimal
+digits, and let $S(n)=\sum_{k=1}^{n}a(k)$.  OEIS A105565 conjectures a sharp
+bounded discrepancy for $S(n)$.  We prove the stronger exact identity
+\[
+  S(n)=\lfloor n\alpha+\beta\rfloor-1 \qquad (n\geq 1),
+\]
+where $\alpha=\log(10)/\log(\varphi)-4$ and
+$\beta=\log(5)/(2\log(\varphi))-1$.  The conjectured strict inequalities follow
+immediately.  The proof accounts for the finite cutoff in the Formal
+Conjectures definition and has been checked by Lean~4 against mathlib without
+unproved assumptions.
+\end{abstract}
+
+\noindent\textbf{2020 Mathematics Subject Classification.}
+11B39, 11B83, 68V15.
+
+\section{The sequence and the conjecture}
+
+Let $(\fib_k)_{k\geq 0}$ be the Fibonacci sequence with $\fib_0=0$ and
+$\fib_1=1$.  For $n\geq 1$, let $a(n)=1$ when exactly five values $\fib_k$
+have $n$ decimal digits, and let $a(n)=0$ otherwise.  Write
+\[
+ S(n)=\sum_{k=1}^{n}a(k), \qquad
+ \varphi=\frac{1+\sqrt5}{2},
+\]
+and define
+\[
+ \alpha=\frac{\log 10}{\log\varphi}-4,
+ \qquad
+ \beta=\frac{\log 5}{2\log\varphi}-1.
+\]
+This is OEIS A105565, introduced by Reinhard Zumkeller.  Hans J.~H.~Tuenter
+recorded the discrepancy conjecture in 2025 and also gave a fractional-part
+description of $a(n)$ for $n>1$~\cite{oeis-a105565}.
+
+\begin{theorem}\label{thm:main}
+For every integer $n\geq 1$,
+\[
+ S(n)=\lfloor n\alpha+\beta\rfloor-1.
+\]
+Consequently,
+\[
+ \beta-2<S(n)-\alpha n<\beta-1.
+\]
+\end{theorem}
+
+The result follows once the exact Fibonacci index cutoff is identified.  Two
+boundary cases matter: no power $10^n$ is Fibonacci, and the logarithmic
+cutoff is never an integer.  These facts also make the final inequalities
+strict.
+
+\section{The exact Fibonacci cutoff}
+
+For $n\geq 1$, define
+\[
+ x_n=\log_{\varphi}(10^n\sqrt5).
+\]
+Binet's formula, with $\psi=(1-\sqrt5)/2$, gives
+$\fib_k=(\varphi^k-\psi^k)/\sqrt5$.  Since $|\psi|<1$ and $\sqrt5>2$,
+\begin{equation}\label{eq:error}
+ \left|\fib_k-\frac{\varphi^k}{\sqrt5}\right|
+   =\frac{|\psi|^k}{\sqrt5}<\frac12.
+\end{equation}
+
+\begin{lemma}[Nonintegral boundary]\label{lem:nonintegral}
+For $n\geq 1$, $x_n$ is not an integer.
+\end{lemma}
+
+\begin{proof}
+Suppose $x_n=k\in\mathbb Z$.  Positivity forces $k\geq 1$, and then
+$\varphi^k=10^n\sqrt5$.  The identity
+\[
+ \varphi^k=\fib_k\varphi+\fib_{k-1}
+\]
+together with $\sqrt5=2\varphi-1$ yields
+\begin{equation}\label{eq:rational-phi}
+ (2\cdot 10^n-\fib_k)\varphi=10^n+\fib_{k-1}.
+\end{equation}
+The right side is positive, so the coefficient of $\varphi$ is nonzero.
+Equation~\eqref{eq:rational-phi} would therefore make $\varphi$ rational, a
+contradiction.
+\end{proof}
+
+\begin{lemma}[Powers of ten are not Fibonacci]\label{lem:not-power-ten}
+For $n\geq 1$, there is no $k$ with $\fib_k=10^n$.
+\end{lemma}
+
+\begin{proof}
+If equality held, then $2\mid\fib_k$ and $5\mid\fib_k$.  The identity
+\[
+ \gcd(\fib_r,\fib_s)=\fib_{\gcd(r,s)}
+\]
+with $r=3$ and $r=5$ implies $3\mid k$ and $5\mid k$, respectively.  Hence
+$15\mid k$, so $\fib_{15}=610$ divides $\fib_k$.  In particular
+$61\mid 10^n$.  Since $61$ is prime, this would imply $61\mid 10$, which is
+impossible.
+\end{proof}
+
+\begin{lemma}[Cutoff equivalence]\label{lem:cutoff}
+For $n\geq1$ and $k\geq0$,
+\[
+ \fib_k<10^n \quad\Longleftrightarrow\quad k<x_n.
+\]
+\end{lemma}
+
+\begin{proof}
+The inequality $k<x_n$ is equivalent to
+$\varphi^k/\sqrt5<10^n$.  Equation~\eqref{eq:error} then gives
+$\fib_k<10^n+1/2$.  Because $\fib_k$ and $10^n$ are integers,
+$\fib_k\leq10^n$; equality is excluded by Lemma~\ref{lem:not-power-ten}.
+
+Conversely, suppose $\fib_k<10^n$.  If $k\geq x_n$, then
+Lemma~\ref{lem:nonintegral} gives $k>x_n$, so
+$\varphi^k/\sqrt5>10^n$.  Equation~\eqref{eq:error} would imply
+$\fib_k>10^n-1/2$, contradicting the integrality of $\fib_k$ and the strict
+upper bound $\fib_k<10^n$.
+\end{proof}
+
+Set $c_n=\lfloor x_n\rfloor$.  Lemmas~\ref{lem:nonintegral} and
+\ref{lem:cutoff} show that
+\begin{equation}\label{eq:cutoff-floor}
+ \fib_k<10^n \quad\Longleftrightarrow\quad k\leq c_n.
+\end{equation}
+
+\section{Reduction to a mechanical word}
+
+Expanding the logarithm gives
+\begin{equation}\label{eq:affine}
+ x_n=4n+1+(n\alpha+\beta).
+\end{equation}
+Put $q_n=n\alpha+\beta$ and $b_n=\lfloor q_n\rfloor$.  Then
+$c_n=4n+1+b_n$.
+
+The elementary bounds $\varphi^4<10<\varphi^5$ give
+\begin{equation}\label{eq:alpha-bounds}
+ 0<\alpha<1.
+\end{equation}
+Similarly, $\varphi^6<10\sqrt5<\varphi^7$, combined with
+$x_1=5+\alpha+\beta$, gives
+\begin{equation}\label{eq:alpha-beta-bounds}
+ 1<\alpha+\beta<2.
+\end{equation}
+In particular $q_n>0$.  Equations~\eqref{eq:alpha-bounds} and
+\eqref{eq:alpha-beta-bounds} also give $q_n<n+2$, so $b_n<n+2$ and
+\begin{equation}\label{eq:finite-cutoff}
+ c_n<5n+10.
+\end{equation}
+This verifies that the finite search range $[0,5n+10)$ in the Formal
+Conjectures definition contains every relevant Fibonacci index.  The formal
+theorem therefore proves the repository definition itself, not merely an
+unbounded reformulation.
+
+For $n\geq2$, equation~\eqref{eq:cutoff-floor} shows that the indices of
+Fibonacci numbers with exactly $n$ digits are precisely the integers in
+$(c_{n-1},c_n]$.  Their number is
+\begin{equation}\label{eq:count}
+ c_n-c_{n-1}=4+(b_n-b_{n-1}).
+\end{equation}
+Because $0<\alpha<1$, the floor increment
+$d_n=b_n-b_{n-1}$ is either $0$ or $1$.  Equation~\eqref{eq:count} shows that
+exactly five $n$-digit Fibonacci numbers occur exactly when $d_n=1$.  Hence
+\begin{equation}\label{eq:a-difference}
+ a(n)=b_n-b_{n-1}\qquad(n\geq2).
+\end{equation}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+The initial value is $a(1)=0$.  By
+equation~\eqref{eq:alpha-beta-bounds}, $b_1=\lfloor\alpha+\beta\rfloor=1$.
+Summing equation~\eqref{eq:a-difference} therefore telescopes:
+\[
+ S(n)=b_n-1=\lfloor n\alpha+\beta\rfloor-1.
+\]
+Lemma~\ref{lem:nonintegral} and equation~\eqref{eq:affine} show that $q_n$ is
+never an integer.  Consequently $q_n-1<b_n<q_n$.  Substituting
+$q_n=n\alpha+\beta$ and $S(n)=b_n-1$ gives
+\[
+ \beta-2<S(n)-\alpha n<\beta-1,
+\]
+as required.
+\end{proof}
+
+\section{Machine-checked verification}
+
+The argument was formalized in Lean~4 against the Google DeepMind Formal
+Conjectures repository~\cite{formal-repo,formal-paper}.  The formalization
+proves the exact bounded-filter sequence definition and the theorem
+\texttt{OeisA105565.conjecture}.  It was checked against repository commit
+\begin{center}
+\small\texttt{2411d22e1bd550d050d0eac6c1fb379a76a3e7c5}
+\end{center}
+using Lean/mathlib 4.27.0.  The following checks completed successfully.
+
+\begin{center}
+\small
+\begin{tabular}{>{\bfseries}p{0.16\linewidth}p{0.72\linewidth}}
+\toprule
+Check & Result \\
+\midrule
+File & \texttt{lake env lean FormalConjectures/OEIS/105565.lean} passed. \\
+Module & \texttt{lake --wfail build FormalConjectures.OEIS.105565} completed
+8,055 jobs successfully. \\
+Axioms & \texttt{propext}, \texttt{Classical.choice}, and
+\texttt{Quot.sound}; no \texttt{sorryAx}. \\
+Sanity & No \texttt{sorry}, \texttt{admit}, \texttt{axiom}, or
+\texttt{unsafe} declaration occurs in the target file. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+A kernel check does not replace editorial review of exposition or novelty, but
+it certifies that the theorem follows from the displayed Lean definitions and
+mathlib's accepted axioms~\cite{lean4,mathlib}.
+
+\section*{Contribution and AI-use statement}
+
+Adam Haig supplied the prompt, selected the conjecture and acceptance criteria,
+authorized publication, and reviewed the resulting mathematical and formal
+artifacts.  OpenAI Codex, an AI coding and reasoning system, performed the
+majority of the mathematical work: it developed and refined the cutoff
+argument, located relevant mathlib lemmas, generated and iteratively repaired
+the Lean formalization, executed the verification checks reported above, and
+drafted this note.  The byline credits both contributors while identifying
+Codex explicitly as an AI system.  Haig is the human submitting author and
+accepts responsibility for the deposit and for correcting any error that may
+be found.
+
+\section*{Acknowledgements}
+
+The authors thank Reinhard Zumkeller for creating A105565, Hans J.~H.~Tuenter
+for recording its formula and discrepancy conjecture, the OEIS community for
+maintaining the entry, and the Formal Conjectures and mathlib contributors for
+the machine-checkable framework.
+
+\begin{thebibliography}{9}
+
+\bibitem{oeis-a105565}
+OEIS Foundation Inc.,
+\emph{The On-Line Encyclopedia of Integer Sequences, A105565: Indicator for
+five Fibonacci numbers with $n$ digits}.
+\url{https://oeis.org/A105565} (accessed 15 August 2026).
+
+\bibitem{spilker}
+J.~Spilker,
+\emph{Die Ziffern der Fibonacci-Zahlen},
+Elemente der Mathematik \textbf{58} (2003), 26--33.
+\url{https://doi.org/10.1007/PL00012537}.
+
+\bibitem{formal-repo}
+The Formal Conjectures Authors,
+\emph{The Formal Conjectures Repository}, 2025--2026.
+\url{https://github.com/google-deepmind/formal-conjectures}.
+
+\bibitem{formal-paper}
+M.~Firsching et al.,
+\emph{Formal Conjectures: An Open and Evolving Benchmark for Verified
+Discovery in Mathematics}, arXiv:2605.13171 (2026).
+\url{https://arxiv.org/abs/2605.13171}.
+
+\bibitem{lean4}
+L.~de Moura and S.~Ullrich,
+\emph{The Lean 4 theorem prover and programming language},
+CADE 2021, LNCS 12699, 625--635.
+\url{https://doi.org/10.1007/978-3-030-79876-5_37}.
+
+\bibitem{mathlib}
+The mathlib Community,
+\emph{The Lean mathematical library},
+Proceedings of CPP 2020, 367--381.
+\url{https://doi.org/10.1145/3372885.3373824}.
+
+\end{thebibliography}
+
+\end{document}
